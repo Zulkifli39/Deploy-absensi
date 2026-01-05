@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// =======================
+/// USERS
+/// =======================
+model users {
+  user_id            Int              @id @default(autoincrement())
+  national_id_number String?          @unique
+  employee_id_number String?          @unique
+  email              String           @unique
+  password_hash      String
+  phone_number       String?
+  display_name       String?
+  department_id      Int?
+  user_role_id       Int?
+  location_id        Int?
+  is_active          Boolean          @default(true)
+  avatar             String?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+  deleted_at         DateTime?
+  sub_department_id  Int?
+  attendances        attendances[]
+  information        information[]    @relation("information_created_by")
+  user_details       user_details?
+  user_faces         user_faces[]
+  department         departments?     @relation(fields: [department_id], references: [department_id])
+  location           locations?       @relation(fields: [location_id], references: [location_id])
+  sub_department     sub_departments? @relation(fields: [sub_department_id], references: [sub_department_id])
+  user_role          user_roles?      @relation(fields: [user_role_id], references: [user_role_id])
+
+  @@index([department_id], map: "users_department_id_fkey")
+  @@index([location_id], map: "users_location_id_fkey")
+  @@index([sub_department_id], map: "users_sub_department_id_fkey")
+  @@index([user_role_id], map: "users_user_role_id_fkey")
+}
+
+model user_details {
+  user_detail_id     Int              @id @default(autoincrement())
+  user_id            Int              @unique
+  title_prefix       String?
+  full_name          String?
+  title_suffix       String?
+  gender             String?
+  birth_date         DateTime?
+  address            String?
+  employee_status_id Int?
+  hire_date          DateTime?
+  termination_date   DateTime?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+  deleted_at         DateTime?
+  employee_status    employee_status? @relation(fields: [employee_status_id], references: [employee_status_id])
+  user               users            @relation(fields: [user_id], references: [user_id], onDelete: NoAction)
+
+  @@index([employee_status_id], map: "user_details_employee_status_id_fkey")
+}
+
+model locations {
+  location_id   Int       @id @default(autoincrement())
+  location_name String
+  address       String?
+  latitude      Decimal?
+  longitude     Decimal?
+  radius_meter  Int?
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+  users         users[]
+}
+
+model departments {
+  department_id   Int               @id @default(autoincrement())
+  department_name String
+  is_active       Boolean           @default(true)
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  sub_departments sub_departments[]
+  users           users[]
+}
+
+model sub_departments {
+  sub_department_id   Int         @id @default(autoincrement())
+  department_id       Int
+  sub_department_name String
+  is_active           Boolean     @default(true)
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+  department          departments @relation(fields: [department_id], references: [department_id], onDelete: NoAction)
+  users               users[]
+
+  @@index([department_id], map: "sub_departments_department_id_fkey")
+}
+
+model user_roles {
+  user_role_id   Int      @id @default(autoincrement())
+  user_role_name String   @unique
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  users          users[]
+}
+
+model employee_status {
+  employee_status_id Int            @id @default(autoincrement())
+  status_name        String
+  description        String?
+  is_active          Boolean        @default(true)
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+  user_details       user_details[]
+}
+
+model user_faces {
+  user_face_id   Int       @id @default(autoincrement())
+  user_id        Int
+  face_image_url String
+  created_at     DateTime  @default(now())
+  deleted_at     DateTime?
+  user           users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction)
+
+  @@index([user_id], map: "user_faces_user_id_fkey")
+}
+
+model information {
+  information_id Int       @id @default(autoincrement())
+  title          String
+  pdf_file_url   String?
+  created_by     Int
+  is_published   Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+  deleted_at     DateTime?
+  user           users     @relation("information_created_by", fields: [created_by], references: [user_id], onDelete: NoAction)
+
+  @@index([created_by], map: "information_created_by_fkey")
+}
+
+model shifts {
+  shift_id    Int    @id @default(autoincrement())
+  shift_code  String @unique
+  shift_name  String
+
+  checkin_time  DateTime?
+  checkout_time DateTime?
+  is_next_day   Boolean @default(false)
+
+  is_reguler Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  shift_days           shift_days[]
+  user_shift_schedules user_shift_schedules[]
+  attendances          attendances[]
+}
+
+model shift_days {
+  shift_day_id Int @id @default(autoincrement())
+  shift_id     Int
+
+  day_of_week String
+  checkin_time  DateTime
+  checkout_time DateTime
+  is_next_day   Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  shift shifts @relation(fields: [shift_id], references: [shift_id])
+}
+
+model schedule_periods {
+  period_id     Int @id @default(autoincrement())
+  department_id Int
+
+  month Int
+  year  Int
+
+  status String @default("DRAFT")
+  // DRAFT | SUBMITTED | APPROVED | LOCKED
+
+  created_by Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user_shift_schedules user_shift_schedules[]
+  attendances          attendances[]
+
+  @@unique([department_id, month, year])
+}
+
+model user_shift_schedules {
+  schedule_id Int @id @default(autoincrement())
+
+  period_id Int
+  user_id   Int
+  shift_id  Int
+
+  schedule_date DateTime
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user   users            @relation(fields: [user_id], references: [user_id])
+  shift  shifts           @relation(fields: [shift_id], references: [shift_id])
+  period schedule_periods @relation(fields: [period_id], references: [period_id])
+
+  @@unique([user_id, schedule_date])
+}
+
+model attendances {
+  attendance_id Int @id @default(autoincrement())
+
+  // RELASI
+  user_id   Int
+  shift_id  Int?
+  period_id Int?
+
+  // TANGGAL ABSENSI (tanggal check-in)
+  attendance_date DateTime
+
+  // WAKTU ABSEN
+  checkin_time  DateTime?
+  checkout_time DateTime?
+
+  // KETERLAMBATAN (TL)
+  late_minutes Int?
+  late_level   String? // TL1, TL2, TL3
+
+  // PULANG SEBELUM WAKTU (PSW)
+  early_leave_minutes Int?
+  early_leave_level   String? // PSW1, PSW2, PSW3, PSW4
+
+  // STATUS
+  attendance_status String?
+  // HADIR | ALPHA | IZIN | SAKIT | CUTI | LIBUR
+
+  // LOKASI (RADIUS CHECK)
+  checkin_latitude   Decimal?
+  checkin_longitude  Decimal?
+  checkout_latitude  Decimal?
+  checkout_longitude Decimal?
+  location_distance  Decimal? // meter dari titik lokasi
+
+  // FACE RECOGNITION
+  checkin_photo_url  String?
+  checkout_photo_url String?
+
+  // FLAG
+  is_late        Boolean @default(false)
+  is_early_leave Boolean @default(false)
+  is_reguler     Boolean @default(false)
+
+  // AUDIT
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // RELATION
+  user   users            @relation(fields: [user_id], references: [user_id])
+  shift  shifts?           @relation(fields: [shift_id], references: [shift_id])
+  period schedule_periods? @relation(fields: [period_id], references: [period_id])
+
+  @@unique([user_id, attendance_date])
+  @@index([attendance_date])
+}

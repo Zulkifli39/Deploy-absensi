@@ -1,0 +1,6 @@
+export const ROLES = {
+  ADMIN: 1,
+  KEPALA_INSTALASI: 2,
+  KEPALA_SUB_INSTALASI: 3,
+  USER: 4,
+};

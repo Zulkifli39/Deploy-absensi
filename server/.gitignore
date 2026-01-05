@@ -1,0 +1,13 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+# Ignored uploads files
+uploads/
+server/src/uploads/
+server/uploads/
+dist/
+build/
+build.js

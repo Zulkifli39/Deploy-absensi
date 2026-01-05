@@ -1,0 +1,51 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+@import "tailwindcss";
+
+
+@theme {
+  --color-primary: #FFF;
+  --color-secondary: #F2F4F6;
+  --color-greenbangladesh: #198D5E;
+  --color-greenmountain : #00c99e;
+  --color-greensecondary: #750450;
+  --color-turqoise: #00BFB3;
+  --color-turqoise-light: #00C4D6;
+  --color-hijau-kuning: #D4E400;
+  --color-turqoise-medium: #00C4D6;
+  --color-abu-abu: #5A5A5A;
+}
+
+body {
+  font-family: "Poppins", "sans-serif";
+  /* display: flex; */
+  /* justify-content: center; */
+  background-color: #e5e7eb; /* gray-200 */
+  /* overflow-x: hidden; */
+}
+
+#root {
+  width: 100%;
+  background: #f2f4f6;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
+.card {
+  @apply bg-turqoise p-6 rounded-2xl shadow-md shadow-gray-200/50 border border-gray-200/50;
+}
+
+.buttondsb {
+  @apply flex items-center gap-1 px-3 py-2 text-sm bg-turqoise text-white rounded-md hover:opacity-90 transition
+}
+
+/* 
+.Toastify__toast-container {
+  z-index: 99999 !important;
+}
+
+.Toastify__toast {
+  border-radius: 14px;
+  min-height: 48px;
+  font-family: inherit;
+} */
